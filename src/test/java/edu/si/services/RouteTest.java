@@ -67,7 +67,7 @@ public class RouteTest extends CamelBlueprintTestSupport {
         // we should then expect at least one message
         getMockEndpoint("mock:result").expectedMinimumMessageCount(1);
 
-        template.sendBodyAndHeader("direct:start", "M4A", "CamelFedoraPid", "si:3484");
+        template.sendBodyAndHeader("direct:start", "M4A", "CamelFedoraPid", "si:3184");
 
         // assert expectations
         assertMockEndpointsSatisfied();

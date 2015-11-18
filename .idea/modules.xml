@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$USER_HOME$/git/sidora-services/Components/FedoraRepo/FedoraRepo.iml" filepath="$USER_HOME$/git/sidora-services/Components/FedoraRepo/FedoraRepo.iml" />
+      <module fileurl="file://$USER_HOME$/git/sidora-services/Components/Reader/Reader.iml" filepath="$USER_HOME$/git/sidora-services/Components/Reader/Reader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VideoDerivatives.iml" filepath="$PROJECT_DIR$/VideoDerivatives.iml" />
+    </modules>
+  </component>
+</project>

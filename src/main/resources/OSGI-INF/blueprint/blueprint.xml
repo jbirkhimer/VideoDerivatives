@@ -37,33 +37,32 @@
 
         <route id="DerivativesStartProcessing">
 
-            <from uri="timer:fire?repeatCount=1"/>
-            <!--<from uri="direct:start"/>-->
+            <!--<from uri="timer:fire?repeatCount=1"/>-->
+            <from uri="direct:start"/>
 
-            <to uri="exec:rm?args=-rf /home/jbirkhimer/IdeaProjects/Intellij-Camel-Blueprint-Test/camel/*"/>
-            <to uri="exec:rm?args=-rf /home/jbirkhimer/IdeaProjects/Intellij-Camel-Blueprint-Test/staging/*"/>
+            <to uri="exec:rm?args=-f /home/jbirkhimer/IdeaProjects/VideoDerivatives/staging/*"/>
 
-            <setHeader headerName="CamelFedoraPid">
+            <!--<setHeader headerName="CamelFedoraPid">
                 <simple>
-                    <!--si:3142-->
-                    <!--si:3144-->
-                    <!--si:3275--> <!-- mkv not creating TN -->
-                    <!--si:3281--> <!-- m4v -->
+                    &lt;!&ndash;si:3142&ndash;&gt;
+                    &lt;!&ndash;si:3144&ndash;&gt;
+                    &lt;!&ndash;si:3275&ndash;&gt; &lt;!&ndash; mkv not creating TN &ndash;&gt;
+                    &lt;!&ndash;si:3281&ndash;&gt; &lt;!&ndash; m4v &ndash;&gt;
 
-                    <!--si:3184--> <!-- m4a -->
-                    <!--si:3210--> <!-- mov has problems with thumbnail just black image -->
+                    &lt;!&ndash;si:3184&ndash;&gt; &lt;!&ndash; m4a &ndash;&gt;
+                    &lt;!&ndash;si:3210&ndash;&gt; &lt;!&ndash; mov has problems with thumbnail just black image &ndash;&gt;
 
-                    <!--si:3213--> <!--avi-->
-                    <!--si:3045--> <!-- mp4 -->
-                    si:3120 <!-- mp4 -->
+                    &lt;!&ndash;si:3213&ndash;&gt; &lt;!&ndash;avi&ndash;&gt;
+                    &lt;!&ndash;si:3045&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
+                    si:3120 &lt;!&ndash; mp4 &ndash;&gt;
 
 
-                    <!--si:389320--> <!-- mp4 -->
-                    <!--si:388897--> <!-- mp4 -->
-                    <!--si:389285--> <!-- avi -->
-                    <!--si:389296--> <!-- qt -->
+                    &lt;!&ndash;si:389320&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
+                    &lt;!&ndash;si:388897&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
+                    &lt;!&ndash;si:389285&ndash;&gt; &lt;!&ndash; avi &ndash;&gt;
+                    &lt;!&ndash;si:389296&ndash;&gt; &lt;!&ndash; qt &ndash;&gt;
                 </simple>
-            </setHeader>
+            </setHeader>-->
 
             <!-- Get the DSID from the Atom message if any. -->
             <setHeader headerName="DSID">
@@ -141,6 +140,7 @@
 
                 <when>
                     <simple>
+                        ${header.dsMIME} == 'video/m4v' ||
                         ${header.dsMIME} == 'video/quicktime' ||
                         ${header.dsMIME} == 'video/avi' ||
                         ${header.dsMIME} == 'video/x-matroska'
@@ -360,12 +360,32 @@
                  loggingLevel="DEBUG"
                  logName="edu.si.derivatives"/>
 
+            <choice>
+                <when>
+                    <simple>
+                        ${header.dsMIME} == 'video/mp4'
+                    </simple>
+                    <setBody>
+                        <simple>
+                            ${header.CamelFileNameProduced}
+                        </simple>
+                    </setBody>
+                </when>
+                <otherwise>
+                    <setBody>
+                        <simple>
+                            ${header.CamelFileNameProduced}.mp4
+                        </simple>
+                    </setBody>
+                </otherwise>
+            </choice>
+
             <!-- Make an TN datastream. -->
             <!-- Create a video thumbnail using ffmpeg. -->
             <recipientList>
                 <simple>
                     <!--exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced}.mp4 -vf thumbnail -frames:v 1 ${header.CamelFileNameProduced}-TN.jpg&amp;useStderrOnEmptyStdout=true-->
-                    exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced}.mp4 -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg
+                    exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${body} -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg
                 </simple>
                 <!-- alt command that picks the best image for a thumbnail "ffmpeg -i - -vf thumbnail -frames:v 1 -" -->
             </recipientList>
