@@ -37,32 +37,33 @@
 
         <route id="DerivativesStartProcessing">
 
-            <!--<from uri="timer:fire?repeatCount=1"/>-->
-            <from uri="direct:start"/>
+            <from uri="timer:fire?repeatCount=1"/>
+            <!--<from uri="direct:start"/>-->
 
             <to uri="exec:rm?args=-rf /home/jbirkhimer/IdeaProjects/Intellij-Camel-Blueprint-Test/camel/*"/>
             <to uri="exec:rm?args=-rf /home/jbirkhimer/IdeaProjects/Intellij-Camel-Blueprint-Test/staging/*"/>
 
-            <!--<setHeader headerName="CamelFedoraPid">
+            <setHeader headerName="CamelFedoraPid">
                 <simple>
-                    si:3144
-                    &lt;!&ndash;si:3275&ndash;&gt; &lt;!&ndash; mkv not creating TN &ndash;&gt;
-                    &lt;!&ndash;si:3281&ndash;&gt; &lt;!&ndash; m4v &ndash;&gt;
+                    <!--si:3142-->
+                    <!--si:3144-->
+                    <!--si:3275--> <!-- mkv not creating TN -->
+                    <!--si:3281--> <!-- m4v -->
 
-                    &lt;!&ndash;si:3184&ndash;&gt; &lt;!&ndash; m4a &ndash;&gt;
-                    &lt;!&ndash;si:3210&ndash;&gt; &lt;!&ndash; mov has problems with thumbnail just black image &ndash;&gt;
+                    <!--si:3184--> <!-- m4a -->
+                    <!--si:3210--> <!-- mov has problems with thumbnail just black image -->
 
-                    &lt;!&ndash;si:3213&ndash;&gt; &lt;!&ndash;avi&ndash;&gt;
-                    &lt;!&ndash;si:3045&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
-                    &lt;!&ndash;si:3120&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
+                    <!--si:3213--> <!--avi-->
+                    <!--si:3045--> <!-- mp4 -->
+                    si:3120 <!-- mp4 -->
 
 
-                    &lt;!&ndash;si:389320&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
-                    &lt;!&ndash;si:388897&ndash;&gt; &lt;!&ndash; mp4 &ndash;&gt;
-                    &lt;!&ndash;si:389285&ndash;&gt; &lt;!&ndash; avi &ndash;&gt;
-                    &lt;!&ndash;si:389296&ndash;&gt; &lt;!&ndash; qt &ndash;&gt;
+                    <!--si:389320--> <!-- mp4 -->
+                    <!--si:388897--> <!-- mp4 -->
+                    <!--si:389285--> <!-- avi -->
+                    <!--si:389296--> <!-- qt -->
                 </simple>
-            </setHeader>-->
+            </setHeader>
 
             <!-- Get the DSID from the Atom message if any. -->
             <setHeader headerName="DSID">
@@ -137,8 +138,8 @@
                          loggingLevel="DEBUG"
                          logName="edu.si.derivatives"/>
                 </when>
-                <when>
 
+                <when>
                     <simple>
                         ${header.dsMIME} == 'video/quicktime' ||
                         ${header.dsMIME} == 'video/avi' ||
@@ -151,28 +152,9 @@
                     <to uri="fedora:addDatastream?name=MP4&amp;type=video/mp4&amp;dsLabel=MP4&amp;group=M&amp;versionable=false"/>
                     <to uri="direct:processDerivativesVideoThumbnailTimePosition"/>
                     <to uri="direct:processDerivativesVideoThumbnail"/>
-
-                    <!--For Testing Dont Delete the Temp File -->
-                    <recipientList> <!-- Delete the temporary file. Note: This approach is Unix specific. -->
-                        <simple>
-                            exec:rm?args=-f ${header.CamelFileNameProduced}.mp4
-                        </simple>
-                    </recipientList>
-                    <choice>
-                        <when>
-                            <simple>
-                                ${headers.CamelExecExitValue} != 0
-                            </simple>
-                            <log message="${id} Derivatives: Unable to delete video working file. Filename: ${headers.CamelFileNameProduced}.mp4"
-                                 loggingLevel="WARN"/>
-                            <!-- We also want to proactively tell monitoring -->
-                        </when>
-                    </choice>
-
                 </when>
 
                 <when>
-
                     <simple>
                         ${header.dsMIME} == 'audio/mp4' ||
                         ${header.dsMIME} == 'audio/ogg' ||
@@ -192,25 +174,10 @@
                     </setBody>
                     <to uri="reader:file"/>
                     <to uri="fedora:addDatastream?name=TN&amp;type=video/jpg&amp;dsLabel=TN&amp;group=M&amp;versionable=false"/>
-                    <!--For Testing Dont Delete the Temp File -->
-                    <recipientList> <!-- Delete the temporary file. Note: This approach is Unix specific. -->
-                        <simple>
-                            exec:rm?args=-f ${header.CamelFileNameProduced}.mp4
-                        </simple>
-                    </recipientList>
-                    <choice>
-                        <when>
-                            <simple>
-                                ${headers.CamelExecExitValue} != 0
-                            </simple>
-                            <log message="${id} Derivatives: Unable to delete video working file. Filename: ${headers.CamelFileNameProduced}.mp4"
-                                 loggingLevel="WARN"/>
-                            <!-- We also want to proactively tell monitoring -->
-                        </when>
-                    </choice>
-
                 </when>
+
                 <otherwise>
+                    <!-- mime type unknown set thumbnail TN to unknown video -->
                     <setBody>
                         <simple>
                             Input/video-thumbnails/video_unknown.png
@@ -221,10 +188,45 @@
                     <log message="${id} An unsupported video file type was found: ${header.dsMIME}."
                          loggingLevel="WARN"/>
                 </otherwise>
+
             </choice>
 
-            <!-- Delete the temporary video file. Note: This approach is Unix specific. -->
-            <recipientList>
+            <!-- Delete the temporary thumbnail file. Note: This approach is Unix specific. -->
+            <!--<recipientList>
+                <simple>
+                    exec:rm?args=-f ${header.CamelFileNameProduced}-TN.jpg
+                </simple>
+            </recipientList>
+            <choice>
+                <when>
+                    <simple>
+                        ${headers.CamelExecExitValue} != 0
+                    </simple>
+                    <log message="${id} Derivatives: Unable to delete Thumbnail working file. Filename: ${headers.CamelFileNameProduced}-TN.jpg4"
+                         loggingLevel="WARN"/>
+                    &lt;!&ndash; We also want to proactively tell monitoring &ndash;&gt;
+                </when>
+            </choice>-->
+
+            <!-- Delete the temporary mp4 file. Note: This approach is Unix specific. -->
+            <!--<recipientList>
+                <simple>
+                    exec:rm?args=-f ${header.CamelFileNameProduced}.mp4
+                </simple>
+            </recipientList>
+            <choice>
+                <when>
+                    <simple>
+                        ${headers.CamelExecExitValue} != 0
+                    </simple>
+                    <log message="${id} Derivatives: Unable to delete video working file. Filename: ${headers.CamelFileNameProduced}.mp4"
+                         loggingLevel="WARN"/>
+                    &lt;!&ndash; We also want to proactively tell monitoring &ndash;&gt;
+                </when>
+            </choice>-->
+
+            <!-- Delete the temporary staging file. Note: This approach is Unix specific. -->
+            <!--<recipientList>
                 <simple>
                     exec:rm?args=-f ${header.CamelFileNameProduced}
                 </simple>
@@ -236,9 +238,9 @@
                     </simple>
                     <log message="${id} Derivatives: Unable to delete video working file. Filename: ${headers.CamelFileNameProduced}"
                          loggingLevel="WARN"/>
-                    <!-- We also want to proactively tell monitoring -->
+                    &lt;!&ndash; We also want to proactively tell monitoring &ndash;&gt;
                 </when>
-            </choice>
+            </choice>-->
 
             <log message="${id} Finished Derivatives Video processing."
                  loggingLevel="DEBUG"
@@ -362,11 +364,10 @@
             <!-- Create a video thumbnail using ffmpeg. -->
             <recipientList>
                 <simple>
-                    <!--exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced} -vf thumbnail -frames:v 1 ${header.CamelFileNameProduced}-TN.jpg&amp;useStderrOnEmptyStdout=true-->
-                    exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced} -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg
+                    <!--exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced}.mp4 -vf thumbnail -frames:v 1 ${header.CamelFileNameProduced}-TN.jpg&amp;useStderrOnEmptyStdout=true-->
+                    exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced}.mp4 -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg
                 </simple>
-                <!--exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced} -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg&amp;useStderrOnEmptyStdout=true-->
-                <!-- alt command that picks the best image for a thumbnail "ffmpeg ffmpeg -i - -vf thumbnail -frames:v 1 -" -->
+                <!-- alt command that picks the best image for a thumbnail "ffmpeg -i - -vf thumbnail -frames:v 1 -" -->
             </recipientList>
 
             <choice>
@@ -403,23 +404,6 @@
                     <log message="${id} Derivatives: Video Thumbnail Processing Failed. PID: ${headers.CamelFedoraPid}  Error Code: ${headers.CamelExecExitValue}"
                          loggingLevel="ERROR"/>
                 </otherwise>
-            </choice>
-
-            <!-- Delete the temporary video file. Note: This approach is Unix specific. -->
-            <recipientList>
-                <simple>
-                    exec:rm?args=-f ${header.CamelFileNameProduced}-TN.jpg
-                </simple>
-            </recipientList>
-            <choice>
-                <when>
-                    <simple>
-                        ${headers.CamelExecExitValue} != 0
-                    </simple>
-                    <log message="${id} Derivatives: Unable to delete Thumbnail working file. Filename: ${headers.CamelFileNameProduced}-TN.jpg4"
-                         loggingLevel="WARN"/>
-                    <!-- We also want to proactively tell monitoring -->
-                </when>
             </choice>
 
             <log message="${id} Finished Video Thumbnail processing."
