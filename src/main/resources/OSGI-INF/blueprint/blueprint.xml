@@ -40,7 +40,7 @@
             <!--<from uri="timer:fire?repeatCount=1"/>-->
             <from uri="direct:start"/>
 
-            <to uri="exec:rm?args=-f /home/jbirkhimer/IdeaProjects/VideoDerivatives/staging/*"/>
+            <!--<to uri="exec:rm?args=-f /home/jbirkhimer/IdeaProjects/VideoDerivatives/staging/*"/>-->
 
             <!--<setHeader headerName="CamelFedoraPid">
                 <simple>
@@ -125,6 +125,11 @@
                     <simple>
                         ${header.dsMIME} == 'video/mp4'
                     </simple>
+                    <setHeader headerName="videoInput">
+                        <simple>
+                            ${headers.CamelFileNameProduced}
+                        </simple>
+                    </setHeader>
 
                     <to uri="reader:file"/>
 
@@ -191,8 +196,8 @@
 
             </choice>
 
-            <!-- Delete the temporary thumbnail file. Note: This approach is Unix specific. -->
-            <!--<recipientList>
+            <!--&lt;!&ndash; Delete the temporary thumbnail file. Note: This approach is Unix specific. &ndash;&gt;
+            <recipientList>
                 <simple>
                     exec:rm?args=-f ${header.CamelFileNameProduced}-TN.jpg
                 </simple>
@@ -206,10 +211,10 @@
                          loggingLevel="WARN"/>
                     &lt;!&ndash; We also want to proactively tell monitoring &ndash;&gt;
                 </when>
-            </choice>-->
+            </choice>
 
-            <!-- Delete the temporary mp4 file. Note: This approach is Unix specific. -->
-            <!--<recipientList>
+            &lt;!&ndash; Delete the temporary mp4 file. Note: This approach is Unix specific. &ndash;&gt;
+            <recipientList>
                 <simple>
                     exec:rm?args=-f ${header.CamelFileNameProduced}.mp4
                 </simple>
@@ -223,10 +228,10 @@
                          loggingLevel="WARN"/>
                     &lt;!&ndash; We also want to proactively tell monitoring &ndash;&gt;
                 </when>
-            </choice>-->
+            </choice>
 
-            <!-- Delete the temporary staging file. Note: This approach is Unix specific. -->
-            <!--<recipientList>
+            &lt;!&ndash; Delete the temporary staging file. Note: This approach is Unix specific. &ndash;&gt;
+            <recipientList>
                 <simple>
                     exec:rm?args=-f ${header.CamelFileNameProduced}
                 </simple>
@@ -276,6 +281,12 @@
                     </setBody>
                     <to uri="reader:file"/>
 
+                    <setHeader headerName="videoInput">
+                        <simple>
+                            ${headers.CamelFileNameProduced}.mp4
+                        </simple>
+                    </setHeader>
+
                     <log message="${id} Derivatives: Converted Video to mp4."
                          loggingLevel="DEBUG"
                          logName="edu.si.derivatives"/>
@@ -299,7 +310,7 @@
 
             <recipientList>
                 <simple>
-                    exec:/usr/local/bin/ffprobe?args=-v error -select_streams v:0 -show_entries stream=duration -of compact=print_section=0:nokey=1 ${header.CamelFileNameProduced}&amp;useStderrOnEmptyStdout=true
+                    exec:/usr/local/bin/ffprobe?args=-v error -select_streams v:0 -show_entries stream=duration -of compact=print_section=0:nokey=1 ${header.videoInput}&amp;useStderrOnEmptyStdout=true
                 </simple>
             </recipientList>
 
@@ -360,32 +371,12 @@
                  loggingLevel="DEBUG"
                  logName="edu.si.derivatives"/>
 
-            <choice>
-                <when>
-                    <simple>
-                        ${header.dsMIME} == 'video/mp4'
-                    </simple>
-                    <setBody>
-                        <simple>
-                            ${header.CamelFileNameProduced}
-                        </simple>
-                    </setBody>
-                </when>
-                <otherwise>
-                    <setBody>
-                        <simple>
-                            ${header.CamelFileNameProduced}.mp4
-                        </simple>
-                    </setBody>
-                </otherwise>
-            </choice>
-
             <!-- Make an TN datastream. -->
             <!-- Create a video thumbnail using ffmpeg. -->
             <recipientList>
                 <simple>
                     <!--exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.CamelFileNameProduced}.mp4 -vf thumbnail -frames:v 1 ${header.CamelFileNameProduced}-TN.jpg&amp;useStderrOnEmptyStdout=true-->
-                    exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${body} -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg
+                    exec:/usr/local/bin/ffmpeg?args=-ss ${header.videoThumbnailTimePosition} -i ${header.videoInput} -vcodec mjpeg -vframes 1 -an -f rawvideo ${header.CamelFileNameProduced}-TN.jpg
                 </simple>
                 <!-- alt command that picks the best image for a thumbnail "ffmpeg -i - -vf thumbnail -frames:v 1 -" -->
             </recipientList>
