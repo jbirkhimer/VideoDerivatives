@@ -16,6 +16,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <camel.version>2.15.4</camel.version>
+        <commons-exec-version>1.3</commons-exec-version>
+        <commons-io-version>2.4</commons-io-version>
+        <commons-lang-version>2.6</commons-lang-version>
         <fedora.client.version>0.7</fedora.client.version>
         <jersy.version>1.17.1</jersy.version>
         <fedoraUrl>http://sidora.myquotient.net:8080/fedora</fedoraUrl>
@@ -36,6 +39,11 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-exec</artifactId>
             <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-exec</artifactId>
+            <version>${commons-exec-version}</version>
         </dependency>
 
         <dependency>
@@ -89,6 +97,16 @@
             <artifactId>camel-test-blueprint</artifactId>
             <version>${camel.version}</version>
             <!--<scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons-lang-version}</version>
         </dependency>
     </dependencies>
 
